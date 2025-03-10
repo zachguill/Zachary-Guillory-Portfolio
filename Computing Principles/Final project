@@ -1,0 +1,187 @@
+let fish = [];
+let sharks = [];
+let bubbles = [];
+let stage = 0;
+let score = 0;
+let sharkNumber = 400;
+
+function setup() {
+  createCanvas(500, 500);
+  for (let i = 0; i < sharkNumber; i++) {
+    b = new Shark(200 * i + width, "navy");
+    sharks.push(b);
+  }
+  for (let i = 0; i < 1; i++) {
+    b = new Fish("grey");
+    fish.push(b);
+  }
+  for (let i = 0; i < 500; i++) {
+    b = new Bubble(100 * i + height);
+    bubbles.push(b);
+  }
+}
+
+function draw() {
+  //Background
+  background("aqua");
+  push();
+  fill("tan");
+  rect(0, height - 20, width, 20);
+  strokeWeight(5);
+  stroke("green");
+  line(width / 10, height / 1.2, width / 6, height);
+  line(width / 6, height / 1.2, width / 6, height);
+  line(width / 4.5, height / 1.2, width / 6, height);
+  line(width / 1.35, height / 1.2, width / 1.25, height);
+  line(width / 1.25, height / 1.2, width / 1.25, height);
+  line(width / 1.15, height / 1.2, width / 1.25, height);
+  pop();
+  for (let i = 0; i < bubbles.length; i++) {
+    bubbles[i].display();
+    bubbles[i].move();
+  }
+  //Splash Screen
+  if (stage == 0) {
+    splash();
+  }
+  if (mouseIsPressed) {
+    stage = 1;
+  }
+  //Gameplay
+  if (stage == 1) {
+    game();
+  }
+  //End Screen
+  if (stage == 2) {
+    end(score);
+  }
+}
+// Start Screen
+function splash() {
+  push();
+  textAlign(CENTER);
+  fill(255);
+  strokeWeight(2);
+  stroke(0);
+  textSize(40);
+  text("Sharks & Fish", width / 2, height / 3.6);
+  textSize(20);
+  text("Click Screen to Start", width / 2, height / 2);
+  text("Controls:", width / 2, height / 1.7);
+  text("Up Arrow = Up; Down Arrow = Down", width / 2, height / 1.5);
+  text("Avoid The Sharks", width / 2, height / 1.3);
+  pop();
+}
+
+//Game Play
+function game() {
+  for (let i = 0; i < fish.length; i++) {
+    fish[i].display();
+  }
+  for (let i = 0; i < sharks.length; i++) {
+    sharks[i].swim(i);
+    sharks[i].display(i);
+    if (sharks[i].x < -50) {
+      sharks.splice(i, 1);
+    }
+    for (let j = 0; j < fish.length; j++) {
+      if (sharks[i].eat(fish[j])) {
+        stage = 2;
+        score = sharkNumber - sharks.length;
+      }
+    }
+  }
+
+  if (keyIsPressed) {
+    if (keyCode === UP_ARROW) {
+      fish[0].move(-5);
+    } else if (keyCode === DOWN_ARROW) {
+      fish[0].move(5);
+    }
+  }
+}
+
+//End Screen
+function end(score) {
+  push();
+  textAlign(CENTER);
+  textSize(32);
+  strokeWeight(2);
+  stroke(0);
+  fill("red");
+  text("Game Over", width / 2, height / 3);
+  text("Score:", width / 2.5, height / 2);
+  text(score, width / 1.7, height / 2);
+  pop();
+}
+
+//Player Controlled Character
+class Fish {
+  constructor(col) {
+    this.x = 30;
+    this.y = height / 2;
+    this.col = col;
+    this.r = 25;
+  }
+  display() {
+    push();
+    fill(this.col);
+    ellipse(this.x, this.y, this.r * 2, this.r);
+    pop();
+  }
+
+  move(dir) {
+    this.y = this.y + dir;
+  }
+}
+
+//Enemies
+class Shark {
+  constructor(x, col) {
+    this.x = x;
+    this.y = random(0, height);
+    this.col = col;
+    this.speed = 1;
+    this.r = 50;
+  }
+  display() {
+    push();
+    fill(this.col);
+    ellipse(this.x, this.y, this.r * 2, this.r);
+    pop();
+  }
+  swim(arPos) {
+    this.x = this.x - (arPos * 0.02 + this.speed);
+  }
+
+  eat(fish) {
+    let d = dist(this.x, this.y, fish.x, fish.y);
+    if (d < this.r / 2 + fish.r / 2) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
+
+//Background Effects
+class Bubble {
+  constructor(y) {
+    this.d = random(10, 30);
+    this.x = random(10, width - 10);
+    this.y = y;
+  }
+
+  display() {
+    push();
+    strokeWeight(2);
+    stroke("white");
+    noFill();
+    circle(this.x, this.y, this.d);
+    pop();
+  }
+  move() {
+    this.y = this.y - 1;
+    this.x = this.x + random(-3, 3);
+  }
+}
